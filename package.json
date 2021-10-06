@@ -1,6 +1,6 @@
 {
   "name": "justewg-common",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Common mpdules, utilities and constants",
   "main": "index.js",
   "dependencies": {

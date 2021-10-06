@@ -30,4 +30,4 @@ for (let i = 0; i <= 16; i++) {
     }
 }
 
-module.exports.colors = colors
+module.exports = colors
