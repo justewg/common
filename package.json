@@ -1,14 +1,18 @@
 {
   "name": "justewg-common",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Common mpdules, utilities and constants",
   "main": "index.js",
   "dependencies": {
+    "console": "^0.7.2",
+    "dotenv": "^10.0.0",
+    "moment": "^2.29.1"
   },
   "repository": {
     "type": "git",
     "url": "git@github.com:justewg/common.git"
   },
+  "license": "",
   "keywords": [],
   "homepage": "https://github.com/justewg/common"
 }
