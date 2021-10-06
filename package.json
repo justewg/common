@@ -1,0 +1,14 @@
+{
+  "name": "justewg-common",
+  "version": "1.0.0",
+  "description": "Common mpdules, utilities and constants",
+  "main": "index.js",
+  "dependencies": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:justewg/common.git"
+  },
+  "keywords": [],
+  "homepage": "https://github.com/justewg/common"
+}
