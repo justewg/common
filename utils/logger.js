@@ -1,7 +1,8 @@
 'use strict';
 
-const colors = require('../constants/color')
 const moment = require('moment')
+
+const colors = require('../constants/color')
 
 
 require('dotenv').config()

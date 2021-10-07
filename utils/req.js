@@ -1,9 +1,11 @@
 "use strict";
 
-require('dotenv').config()
-
 const request = require('request-promise')
+
 const logger = require('./logger')()
+
+
+require('dotenv').config()
 
 
 /**
