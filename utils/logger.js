@@ -146,12 +146,9 @@ const getLoggerModule = (loggerModule) => {
     }
 }
 
-module.exports = (args) => {
-    args = args || {}
-    let logger
-    
-    // Если был запущен импорт - то все логирование делаем в лог-файл
-    if (args.hasOwnProperty('logToFile') && args['logToFile'] === true/* || (process.argv[process.argv.length - 1].indexOf('import.js') > -1 || process.argv.filter(p => p.match(/\/workers\/tasks\//)).length > 0)*/) {
+module.exports = (args = {}) => {
+    // Если логгер был подключен с параметром логирования в файл - инициализируем модуль записи логов в файл, иначе - обычная консоль
+    if (args.hasOwnProperty('logToFile') && args['logToFile'] === true) {
         const fs = require('fs')
         const Console = require('console')
         
@@ -163,13 +160,8 @@ module.exports = (args) => {
         const errorOutput = fs.createWriteStream(logfile, { 'flags': 'a' });
         const loggerModule = new Console(output, errorOutput);
         
-        // loggerModule.log(process.argv, process.argv.filter(p => p.match(/\/workers\/tasks\//)))
-        
-        logger = getLoggerModule(loggerModule)
-        
-        // Иначе - если это АПИ - то логируем обычной консолью
+        return getLoggerModule(loggerModule)
     } else {
-        logger = getLoggerModule(console)
+        return getLoggerModule(console)
     }
-    return logger
 }

@@ -10,7 +10,7 @@ const logger = require('./logger')()
  * URL для внешнего API
  * @type {*|string}
  */
-const API_URL = null
+let API_URL = null
 
 /**
  * Bearer-токен для авторизации запросов
