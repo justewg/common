@@ -2,7 +2,9 @@
 
 const request = require('request-promise')
 
+const common = require('./index')
 const logger = require('./logger')()
+logger.setLogLevel({except: 'requests'})
 
 
 require('dotenv').config()
@@ -91,7 +93,12 @@ const make = async (ctx, url, args = {}) => {
             rejectUnauthorized: false,
             method: args.method || 'POST',
             url: `${API_URL}${url}`,
-            form: args
+        }
+        let clearedArgs = common.objectExceptFields(args, 'API_URL method')
+        if (opts.method === 'POST' || opts.method === 'PUT') {
+            opts.form = clearedArgs
+        } else if (Object.keys(clearedArgs).length > 0) {
+            opts.url += (opts.url.match(/\?/) ? '&' : '?') + new URLSearchParams(clearedArgs).toString()
         }
         
         // Логируем параметры запросы
