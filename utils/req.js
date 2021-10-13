@@ -4,7 +4,7 @@ const request = require('request-promise')
 
 const common = require('./index')
 const logger = require('./logger')()
-logger.setLogLevel({except: 'requests'})
+// logger.setLogLevel({except: 'requests'})
 
 
 require('dotenv').config()
@@ -80,7 +80,7 @@ const make = async (ctx, url, args = {}) => {
         }
         
         // Определяем авторизационный токен из объекта пользователя
-        const token = SESSION_TOKEN || (user && (user.token || user.get('token')))
+        const token = SESSION_TOKEN || (ctx && ctx.session && ctx.session.token) || (user && (user.token || user.get('token')))
         
         // Если url не начинается со слэша - добавляем
         if (!url.match(/^\//)) {
@@ -102,9 +102,9 @@ const make = async (ctx, url, args = {}) => {
         }
         
         // Логируем параметры запросы
-        if (logger.includes('requests')) {
-            logger.log('Запрос:', opts)
-        }
+        // if (logger.includes('requests')) {
+        //     logger.log('Запрос:', opts)
+        // }
         
         // Осуществляем запрос
         request(opts, (error, response, body) => {
@@ -116,8 +116,15 @@ const make = async (ctx, url, args = {}) => {
                     reject({success: false, error: {message: body}})
                 } else {
                     try {
-                        responseJSON = JSON.parse(body)
+                        if (body !== "") {
+                            responseJSON = JSON.parse(body)
+                        } else {
+                            reject({success: false, error: {message: 'Пустой ответ'}})
+                        }
                     } catch (err) {
+                        if (logger.includes('requests')) {
+                            logger.log('запрос: ', opts)
+                        }
                         if (logger.includes('responses')) {
                             logger.log('body: ', body)
                         }

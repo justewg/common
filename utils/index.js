@@ -2,6 +2,7 @@
 
 const url = require('url')
 const fs = require('fs')
+const JsonWebToken = require('jsonwebtoken');
 
 const logger = require('./logger')();
 
@@ -53,6 +54,55 @@ const getArgsFromQueryParams = (ctx, args) => {
 }
 
 module.exports.getArgsFromQueryParams = getArgsFromQueryParams;
+
+/**
+ * Получает токен из заголовков запроса
+ *
+ * @param ctx - Контекст приложения
+ * @returns {string} - Токен
+ */
+const getTokenFromHeaders = (ctx) => {
+    return (ctx.request.header.authorization || '').replace(/^Bearer /, '')
+}
+
+module.exports.getTokenFromHeaders = getTokenFromHeaders;
+
+/**
+ * Проверяет валидность токен из заголовков запроса или из опций
+ *
+ * @param ctx - Контекст приложения
+ * @param opts - Опции проверки:
+ *               token: {string} - Токен который нужно проверить вместо того, чтобы взять его из заголовков запроса
+ *               public: {bool} - Вернуть ли только публично доступные поля (см. модель User)
+ * @returns {Promise.<*>} Объект, содержащий результаты верификации
+ */
+const verifyToken = async (ctx, opts) => {
+    opts = opts || {}
+    const tokenToVerify = opts.token && opts.token !== '' ? opts.token : getTokenFromHeaders(ctx)
+    
+    const result = {success: false}
+    await JsonWebToken.verify(tokenToVerify, process.env.JWT_SECRET, {}, async (err, decoded) => {
+        if (err) {
+            result.error = err
+        } else {
+            result.success = true
+            result.data = decoded
+            
+            // const u = await User.findOne({email: token.user}).exec();
+            // if (!u) {
+            //     result.success = false
+            //     result.error = 'User not found'
+            // } else {
+            //     result.ttl = moment(token.exp * 1000).diff(moment()) / 1000 / 60
+            //     result.user = u.toClient(ctx)
+            //     result.user.token = tokenToVerify
+            // }
+        }
+    })
+    return result
+}
+
+module.exports.verifyToken = verifyToken;
 
 module.exports.objectWithOnlyFields = (obj, keys) => {
     obj = obj || {}
