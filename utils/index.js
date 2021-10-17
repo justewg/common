@@ -2,7 +2,8 @@
 
 const url = require('url')
 const fs = require('fs')
-const JsonWebToken = require('jsonwebtoken');
+const JsonWebToken = require('jsonwebtoken')
+const moment = require('moment')
 
 const logger = require('./logger')();
 
@@ -86,6 +87,9 @@ const verifyToken = async (ctx, opts) => {
             result.error = err
         } else {
             result.success = true
+            const minutesToExpire = Math.floor(moment(decoded.exp * 1000).diff(moment()) / 1000 / 60)
+            decoded.expired = minutesToExpire < 0
+            decoded.minutes_to_expire = minutesToExpire
             result.data = decoded
             
             // const u = await User.findOne({email: token.user}).exec();

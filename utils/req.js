@@ -114,13 +114,11 @@ const make = async (ctx, url, args = {}) => {
                     reject({success: false, error: {message: body}})
                 } else if (body.match(/Internal Server Error/)) {
                     reject({success: false, error: {message: body}})
+                } else if (body === '') {
+                    reject({success: false, error: {message: 'Пустой ответ'}})
                 } else {
                     try {
-                        if (body !== "") {
-                            responseJSON = JSON.parse(body)
-                        } else {
-                            reject({success: false, error: {message: 'Пустой ответ'}})
-                        }
+                        responseJSON = JSON.parse(body)
                     } catch (err) {
                         if (logger.includes('requests')) {
                             logger.log('запрос: ', opts)
