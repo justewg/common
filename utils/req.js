@@ -94,12 +94,15 @@ const make = async (ctx, url, args = {}) => {
             method: args.method || 'POST',
             url: `${API_URL}${url}`,
         }
-        const formFormat = opts.method === 'POST' || opts.method === 'PUT' || args.arrays_as_form_args === true
+        const splitArraysToDormArgs = args.arrays_as_form_args === true
         let clearedArgs = common.objectExceptFields(args, 'API_URL method headers arrays_as_form_args')
-        if (formFormat) {
+        if (splitArraysToDormArgs) {
+            clearedArgs = Object.keys(clearedArgs).reduce((a, k) => a.concat(Array.isArray(clearedArgs[k]) ? clearedArgs[k].map(v => [k, v]) : [[k, clearedArgs[k]]]), [])
+        }
+        if (opts.method === 'POST' || opts.method === 'PUT') {
             opts.form = clearedArgs
-        } else if (Object.keys(clearedArgs).length > 0) {
-            opts.url += (opts.url.match(/\?/) ? '&' : '?') + new URLSearchParams(clearedArgs).toString()
+        } else {
+            opts.url += (opts.url.match(/\?/) ? '&' : '?') + new URLSearchParams(clearedArgs).toString().replace(/\+/g, '%20')
         }
 
         // Логируем параметры запросы
