@@ -65,47 +65,48 @@ const make = async (ctx, url, args = {}) => {
         logger.error('IAC API URL is not defined.')
         return null
     }
-    
+
     return new Promise( async (resolve, reject) => {
         let user = SESSION_USER
-        
+
         // Если определен контекст приложения - ищем там данные пользователя
         if (ctx && typeof ctx !== 'undefined') {
             const sessionField = args.session_field || 'session'
-            
+
             // Ищем данные пользователя в поле состояния, определяемом default- или указанной переменной
             if (ctx[sessionField] && ctx[sessionField].user) {
                 user = ctx[sessionField].user
             }
         }
-        
+
         // Определяем авторизационный токен из объекта пользователя
         const token = SESSION_TOKEN || (ctx && ctx.session && ctx.session.token) || (user && (user.token || user.get('token')))
-        
+
         // Если url не начинается со слэша - добавляем
         if (!url.match(/^\//)) {
             url = '/' + url
         }
-        
+
         // Формируем опции запроса
         let opts = {
-            headers: token ? { 'Authorization': 'Bearer ' + token } : null,
+            headers: args.headers || (token ? { 'Authorization': 'Bearer ' + token } : null),
             rejectUnauthorized: false,
             method: args.method || 'POST',
             url: `${API_URL}${url}`,
         }
-        let clearedArgs = common.objectExceptFields(args, 'API_URL method')
-        if (opts.method === 'POST' || opts.method === 'PUT') {
+        const formFormat = opts.method === 'POST' || opts.method === 'PUT' || args.arrays_as_form_args === true
+        let clearedArgs = common.objectExceptFields(args, 'API_URL method headers arrays_as_form_args')
+        if (formFormat) {
             opts.form = clearedArgs
         } else if (Object.keys(clearedArgs).length > 0) {
             opts.url += (opts.url.match(/\?/) ? '&' : '?') + new URLSearchParams(clearedArgs).toString()
         }
-        
+
         // Логируем параметры запросы
         // if (logger.includes('requests')) {
-        //     logger.log('Запрос:', opts)
+        logger.log('Запрос:', opts)
         // }
-        
+
         // Осуществляем запрос
         request(opts, (error, response, body) => {
             if (!error) {
