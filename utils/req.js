@@ -99,7 +99,9 @@ const make = async (ctx, url, args = {}) => {
         if (splitArraysToDormArgs) {
             clearedArgs = Object.keys(clearedArgs).reduce((a, k) => a.concat(Array.isArray(clearedArgs[k]) ? clearedArgs[k].map(v => [k, v]) : [[k, clearedArgs[k]]]), [])
         }
-        if (opts.method === 'POST' || opts.method === 'PUT') {
+        if (args.body) {
+            opts.body = args.body
+        } else if (opts.method === 'POST' || opts.method === 'PUT') {
             opts.form = clearedArgs
         } else {
             opts.url += (opts.url.match(/\?/) ? '&' : '?') + new URLSearchParams(clearedArgs).toString().replace(/\+/g, '%20')
