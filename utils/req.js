@@ -90,7 +90,7 @@ const make = async (ctx, url, args = {}) => {
         // Формируем опции запроса
         let opts = {
             headers: args.headers || (token ? { 'Authorization': 'Bearer ' + token } : null),
-            rejectUnauthorized: false,
+            rejectUnauthorized: args.hasOwnProperty('rejectUnauthorized') ? args.rejectUnauthorized : false,
             method: args.method || 'POST',
             url: `${API_URL}${url}`,
         }
@@ -104,6 +104,10 @@ const make = async (ctx, url, args = {}) => {
         }
         if (args.body) {
             opts.body = args.body
+        } else if (args.formData) {
+            opts.formData = args.formData
+        } else if (args.multipart) {
+            opts.multipart = args.multipart
         } else if (opts.method === 'POST' || opts.method === 'PUT') {
             opts.form = clearedArgs
         } else {
