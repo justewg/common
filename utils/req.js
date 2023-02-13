@@ -94,8 +94,11 @@ const make = async (ctx, url, args = {}) => {
             method: args.method || 'POST',
             url: `${API_URL}${url}`,
         }
+        if (!args.hasOwnProperty('content_type')) {
+            args.content_type = 'json'
+        }
         const splitArraysToDormArgs = args.arrays_as_form_args === true
-        let clearedArgs = common.objectExceptFields(args, 'API_URL method headers arrays_as_form_args')
+        let clearedArgs = common.objectExceptFields(args, 'API_URL method headers arrays_as_form_args content_type')
         if (splitArraysToDormArgs) {
             clearedArgs = Object.keys(clearedArgs).reduce((a, k) => a.concat(Array.isArray(clearedArgs[k]) ? clearedArgs[k].map(v => [k, v]) : [[k, clearedArgs[k]]]), [])
         }
@@ -130,19 +133,23 @@ const make = async (ctx, url, args = {}) => {
                 } else if (body === '') {
                     reject({success: false, error: {message: 'Пустой ответ'}})
                 } else {
-                    try {
-                        responseJSON = JSON.parse(body)
-                    } catch (err) {
-                        if (logger.includes('requests')) {
-                            logger.log('запрос: ', opts)
+                    if (args.content_type === 'json'){
+                        try {
+                            responseJSON = JSON.parse(body)
+                        } catch (err) {
+                            if (logger.includes('requests')) {
+                                logger.log('запрос: ', opts)
+                            }
+                            if (logger.includes('responses')) {
+                                logger.log('body: ', body)
+                            }
+                            if (logger.includes('errors')) {
+                                logger.error('context:', ctx)
+                                logger.error('error:', err)
+                            }
                         }
-                        if (logger.includes('responses')) {
-                            logger.log('body: ', body)
-                        }
-                        if (logger.includes('errors')) {
-                            logger.error('context:', ctx)
-                            logger.error('error:', err)
-                        }
+                    } else {
+                        responseJSON = {success: true, text: body}
                     }
                 }
                 if (responseJSON !== null) {
