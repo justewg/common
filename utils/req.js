@@ -151,6 +151,7 @@ const make = async (ctx, url, args = {}) => {
                     } else {
                         responseJSON = {success: true, text: body}
                     }
+                    responseJSON.status = responseJSON.status || response.statusCode
                 }
                 if (responseJSON !== null) {
                     if (!responseJSON.hasOwnProperty('error')) {
