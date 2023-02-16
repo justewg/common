@@ -9,6 +9,9 @@ const logger = require('./logger')()
 
 require('dotenv').config()
 
+if (process.env.LOG_LEVEL !== '') {
+    logger.setLogLevel(process.env.LOG_LEVEL)
+}
 
 /**
  * URL для внешнего API
@@ -118,9 +121,9 @@ const make = async (ctx, url, args = {}) => {
         }
 
         // Логируем параметры запросы
-        // if (logger.includes('requests')) {
-        logger.log('Запрос:', opts)
-        // }
+        if (logger.includes('requests')) {
+            logger.log('Запрос:', opts)
+        }
 
         // Осуществляем запрос
         request(opts, (error, response, body) => {
