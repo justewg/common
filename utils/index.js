@@ -176,7 +176,7 @@ const mergeDeepV1 = (target, source, options = { arraysMergingType: "overwrite" 
             } else if (options.arraysMergingType === "concat") {
                 target[key] = targetValue.concat(sourceValue);
             } else if (options.arraysMergingType === "overwrite") {
-                target[key] = targetValue.concat(sourceValue);
+                target[key] = sourceValue;
             } else {
                 console.error("Wrong arraysMergingType option assigned")
             }
