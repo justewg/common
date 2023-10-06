@@ -143,7 +143,7 @@ module.exports.limitArrayWithEllipsis = (a, limit) => {
 }
 
 // https://gist.github.com/ahtcx/0cd94e62691f539160b32ecda18af3d6
-const mergeDeepV1 = (target, source, isMergingArrays = false) => {
+const mergeDeepV1 = (target, source, options = { arraysMergingType: "overwrite" }) => {
     target = ((obj) => {
         let cloneObj;
         try {
@@ -167,17 +167,19 @@ const mergeDeepV1 = (target, source, isMergingArrays = false) => {
         const sourceValue = source[key];
 
         if (Array.isArray(targetValue) && Array.isArray(sourceValue))
-            if (isMergingArrays) {
+            if (options.arraysMergingType === "map") {
                 target[key] = targetValue.map((x, i) => sourceValue.length <= i
                     ? x
-                    : mergeDeepV1(x, sourceValue[i], isMergingArrays));
+                    : mergeDeepV1(x, sourceValue[i], options));
                 if (sourceValue.length > targetValue.length)
                     target[key] = target[key].concat(sourceValue.slice(targetValue.length));
-            } else {
+            } else if (options.arraysMergingType === "concat") {
                 target[key] = targetValue.concat(sourceValue);
+            } else {
+                target[key] = sourceValue;
             }
         else if (isObject(targetValue) && isObject(sourceValue))
-            target[key] = mergeDeepV1(Object.assign({}, targetValue), sourceValue, isMergingArrays);
+            target[key] = mergeDeepV1(Object.assign({}, targetValue), sourceValue, options);
         else
             target[key] = sourceValue;
     });
@@ -197,4 +199,4 @@ const deepMergeV2 = (source, target, arrayMergeType)  => {
 }
 
 
-module.exports.mergeDeep = deepMergeV2;
+module.exports.mergeDeep = mergeDeepV1;
