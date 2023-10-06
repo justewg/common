@@ -175,8 +175,10 @@ const mergeDeepV1 = (target, source, options = { arraysMergingType: "overwrite" 
                     target[key] = target[key].concat(sourceValue.slice(targetValue.length));
             } else if (options.arraysMergingType === "concat") {
                 target[key] = targetValue.concat(sourceValue);
+            } else if (options.arraysMergingType === "overwrite") {
+                target[key] = targetValue.concat(sourceValue);
             } else {
-                target[key] = sourceValue;
+                console.error("Wrong arraysMergingType option assigned")
             }
         else if (isObject(targetValue) && isObject(sourceValue))
             target[key] = mergeDeepV1(Object.assign({}, targetValue), sourceValue, options);
