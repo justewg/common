@@ -142,7 +142,8 @@ module.exports.limitArrayWithEllipsis = (a, limit) => {
     return (a.length > limit ? a.slice(0, ~~(limit / 2)).concat([{id: '...'}]).concat(a.slice(a.length - ~~(limit / 2) - limit % 2 + 1, a.length)) : a)
 }
 
-const mergeDeep = (target, source, isMergingArrays = false) => {
+// https://gist.github.com/ahtcx/0cd94e62691f539160b32ecda18af3d6
+const mergeDeepV1 = (target, source, isMergingArrays = false) => {
     target = ((obj) => {
         let cloneObj;
         try {
@@ -169,19 +170,31 @@ const mergeDeep = (target, source, isMergingArrays = false) => {
             if (isMergingArrays) {
                 target[key] = targetValue.map((x, i) => sourceValue.length <= i
                     ? x
-                    : mergeDeep(x, sourceValue[i], isMergingArrays));
+                    : mergeDeepV1(x, sourceValue[i], isMergingArrays));
                 if (sourceValue.length > targetValue.length)
                     target[key] = target[key].concat(sourceValue.slice(targetValue.length));
             } else {
                 target[key] = targetValue.concat(sourceValue);
             }
         else if (isObject(targetValue) && isObject(sourceValue))
-            target[key] = mergeDeep(Object.assign({}, targetValue), sourceValue, isMergingArrays);
+            target[key] = mergeDeepV1(Object.assign({}, targetValue), sourceValue, isMergingArrays);
         else
             target[key] = sourceValue;
     });
 
     return target;
 };
+const deepMergeV2 = (source, target, arrayMergeType)  => {
+    return void Object.keys(target).forEach(key => {
+        source[key] instanceof Object && target[key] instanceof Object
+            ? source[key] instanceof Array && target[key] instanceof Array
+                ? void (source[key] = Array.from(new Set(source[key].concat(target[key]))))
+                : !(source[key] instanceof Array) && !(target[key] instanceof Array)
+                    ? void deepMergeV2(source[key], target[key])
+                    : void (source[key] = target[key])
+            : void (source[key] = target[key]);
+    }) || source;
+}
 
-module.exports.mergeDeep = mergeDeep;
+
+module.exports.mergeDeep = deepMergeV2;
