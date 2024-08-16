@@ -1,9 +1,9 @@
 'use strict';
 
-const url = require('url')
-const fs = require('fs')
-const JsonWebToken = require('jsonwebtoken')
-const moment = require('moment')
+const url = require('url');
+const fs = require('fs');
+const JsonWebToken = require('jsonwebtoken');
+const moment = require('moment');
 
 const logger = require('./logger')();
 
@@ -80,7 +80,7 @@ module.exports.getTokenFromHeaders = getTokenFromHeaders;
 const verifyToken = async (ctx, opts) => {
     opts = opts || {}
     const tokenToVerify = opts.token && opts.token !== '' ? opts.token : getTokenFromHeaders(ctx)
-    
+
     const result = {success: false}
     await JsonWebToken.verify(tokenToVerify, process.env.JWT_SECRET, {}, async (err, decoded) => {
         if (err) {
@@ -91,7 +91,7 @@ const verifyToken = async (ctx, opts) => {
             decoded.expired = minutesToExpire < 0
             decoded.minutes_to_expire = minutesToExpire
             result.data = decoded
-            
+
             // const u = await User.findOne({email: token.user}).exec();
             // if (!u) {
             //     result.success = false
@@ -141,6 +141,48 @@ module.exports.objectExceptFields = (obj, keys) => {
 module.exports.limitArrayWithEllipsis = (a, limit) => {
     return (a.length > limit ? a.slice(0, ~~(limit / 2)).concat([{id: '...'}]).concat(a.slice(a.length - ~~(limit / 2) - limit % 2 + 1, a.length)) : a)
 }
+
+const mergeDeepV0 = (target, source, isMergingArrays = false) => {
+    target = ((obj) => {
+        let cloneObj;
+        try {
+            cloneObj = JSON.parse(JSON.stringify(obj));
+        } catch(err) {
+            // If the stringify fails due to circular reference, the merge defaults
+            //   to a less-safe assignment that may still mutate elements in the target.
+            // You can change this part to throw an error for a truly safe deep merge.
+            cloneObj = Object.assign({}, obj);
+        }
+        return cloneObj;
+    })(target);
+
+    const isObject = (obj) => obj && typeof obj === "object";
+
+    if (!isObject(target) || !isObject(source))
+        return source;
+
+    Object.keys(source).forEach(key => {
+        const targetValue = target[key];
+        const sourceValue = source[key];
+
+        if (Array.isArray(targetValue) && Array.isArray(sourceValue))
+            if (isMergingArrays) {
+                target[key] = targetValue.map((x, i) => sourceValue.length <= i
+                    ? x
+                    : mergeDeep(x, sourceValue[i], isMergingArrays));
+                if (sourceValue.length > targetValue.length)
+                    target[key] = target[key].concat(sourceValue.slice(targetValue.length));
+            } else {
+                target[key] = targetValue.concat(sourceValue);
+            }
+        else if (isObject(targetValue) && isObject(sourceValue))
+            target[key] = mergeDeep(Object.assign({}, targetValue), sourceValue, isMergingArrays);
+        else
+            target[key] = sourceValue;
+    });
+
+    return target;
+};
 
 // https://gist.github.com/ahtcx/0cd94e62691f539160b32ecda18af3d6
 const mergeDeepV1 = (target, source, options = { arraysMergingType: "overwrite" }) => {
@@ -200,5 +242,17 @@ const deepMergeV2 = (source, target, arrayMergeType)  => {
     }) || source;
 }
 
-
 module.exports.mergeDeep = mergeDeepV1;
+
+const getNextDateOfRequiredWeekday = (day, weekday, usingToday) => {
+    const current = moment(day).isoWeekday();
+    const days =
+        (current < weekday
+            ? 0
+            : current === weekday && usingToday === true
+                ? 0
+                : 7) +
+        ((weekday - current) % 7);
+    return day.clone().add(days, 'd');
+};
+module.exports.getNextDateOfRequiredWeekday = getNextDateOfRequiredWeekday;

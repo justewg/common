@@ -149,18 +149,18 @@ const getLoggerModule = (loggerModule) => {
 
 module.exports = (args = {}) => {
     // Если логгер был подключен с параметром логирования в файл - инициализируем модуль записи логов в файл, иначе - обычная консоль
-    if (args.hasOwnProperty('logToFile') && args['logToFile'] === true) {
+    if (args.hasOwnProperty('log_to_file') && args['log_to_file'] === true) {
         const fs = require('fs')
         const Console = require('console')
-        
+
         require('dotenv').config()
-        
-        const logfile = __dirname + '/../' + process.env.LOG_FILE
-        
+
+        const logfile = args.log_file || __dirname + '/../' + process.env.LOG_FILE
+
         const output = fs.createWriteStream(logfile, { 'flags': 'a' });
         const errorOutput = fs.createWriteStream(logfile, { 'flags': 'a' });
-        const loggerModule = new Console(output, errorOutput);
-        
+        const loggerModule = new Console.Console(output, errorOutput);
+
         return getLoggerModule(loggerModule)
     } else {
         return getLoggerModule(console)

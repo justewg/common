@@ -92,6 +92,7 @@ const make = async (ctx, url, args = {}) => {
 
         // Формируем опции запроса
         let opts = {
+            timeout: args.timeout || 20000,
             headers: args.headers || (token ? { 'Authorization': 'Bearer ' + token } : null),
             rejectUnauthorized: args.hasOwnProperty('rejectUnauthorized') ? args.rejectUnauthorized : false,
             method: args.method || 'POST',
@@ -140,21 +141,25 @@ const make = async (ctx, url, args = {}) => {
                         try {
                             responseJSON = JSON.parse(body)
                         } catch (err) {
-                            if (logger.includes('requests')) {
+                            // if (logger.includes('requests')) {
                                 logger.log('запрос: ', opts)
-                            }
-                            if (logger.includes('responses')) {
+                            // }
+                            // if (logger.includes('responses')) {
                                 logger.log('body: ', body)
-                            }
-                            if (logger.includes('errors')) {
+                            // }
+                            // if (logger.includes('errors')) {
                                 logger.error('context:', ctx)
                                 logger.error('error:', err)
-                            }
+                            // }
+                            responseJSON = {success: false, error: err}
+                        }
+                        if (typeof responseJSON === 'string') {
+                            responseJSON = {success: true, text: responseJSON}
                         }
                     } else {
                         responseJSON = {success: true, text: body}
                     }
-                    responseJSON.status = responseJSON.status || response.statusCode
+                    responseJSON.status = (responseJSON && typeof(responseJSON) === 'object' ? responseJSON.status : response.statusCode) || 200
                 }
                 if (responseJSON !== null) {
                     if (!responseJSON.hasOwnProperty('error')) {
