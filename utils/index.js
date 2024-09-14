@@ -256,3 +256,18 @@ const getNextDateOfRequiredWeekday = (day, weekday, usingToday) => {
     return day.clone().add(days, 'd');
 };
 module.exports.getNextDateOfRequiredWeekday = getNextDateOfRequiredWeekday;
+
+const intersection = ( arrA, arrB ) => (arrA.filter(x => arrB.includes(x)));
+module.exports.intersection = intersection;
+
+const union = ( arrA, arrB ) => ([...new Set([...arrA, ...arrB])]);
+module.exports.union = union;
+
+const difference = ( arrA, arrB ) => (arrA.filter(x => !arrB.includes(x)));
+module.exports.difference = difference;
+
+const symDifference = ( arrA, arrB ) => (
+    difference(arrA, arrB)
+        .concat(arrB.filter(x => !arrA.includes(x)))
+);
+module.exports.symDifference = symDifference;

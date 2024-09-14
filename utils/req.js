@@ -102,7 +102,11 @@ const make = async (ctx, url, args = {}) => {
             args.content_type = 'json'
         }
         const splitArraysToDormArgs = args.arrays_as_form_args === true
-        let clearedArgs = common.objectExceptFields(args, 'API_URL method headers arrays_as_form_args content_type')
+        let clearedArgs = common.objectExceptFields(args, 'API_URL CUSTOM_METHOD_ARG method headers arrays_as_form_args content_type')
+        // fix на случай если кроме метода реквеста нужно передать кастомный параметр method
+        if (args.CUSTOM_METHOD_ARG) {
+            clearedArgs.method = args.CUSTOM_METHOD_ARG;
+        }
         if (splitArraysToDormArgs) {
             clearedArgs = Object.keys(clearedArgs).reduce((a, k) => a.concat(Array.isArray(clearedArgs[k]) ? clearedArgs[k].map(v => [k, v]) : [[k, clearedArgs[k]]]), [])
         }
@@ -142,14 +146,14 @@ const make = async (ctx, url, args = {}) => {
                             responseJSON = JSON.parse(body)
                         } catch (err) {
                             // if (logger.includes('requests')) {
-                                logger.log('запрос: ', opts)
+                            logger.log('запрос: ', opts)
                             // }
                             // if (logger.includes('responses')) {
-                                logger.log('body: ', body)
+                            logger.log('body: ', body)
                             // }
                             // if (logger.includes('errors')) {
-                                logger.error('context:', ctx)
-                                logger.error('error:', err)
+                            logger.error('context:', ctx)
+                            logger.error('error:', err)
                             // }
                             responseJSON = {success: false, error: err}
                         }
